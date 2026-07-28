@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>e-Saddık Yönetim</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+font-family:"Segoe UI",Arial;
+}
+
+body{
+margin:0;
+background:#edf2f7;
+}
+
+
+.header{
+background:linear-gradient(135deg,#002b55,#005ca8);
+color:white;
+padding:30px;
+text-align:center;
+}
+
+
+.container{
+
+max-width:700px;
+width:95%;
+margin:30px auto;
+
+}
+
+
+.card{
+
+background:white;
+padding:30px;
+border-radius:18px;
+box-shadow:0 8px 25px #0002;
+
+}
+
+
+input,textarea,button{
+
+width:100%;
+padding:14px;
+margin-top:12px;
+border-radius:10px;
+
+}
+
+
+input,textarea{
+
+border:1px solid #ccc;
+
+}
+
+
+textarea{
+
+height:180px;
+
+}
+
+
+button{
+
+background:#005ca8;
+color:white;
+border:0;
+cursor:pointer;
+
+}
+
+
+button:hover{
+
+background:#003b70;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+<h1>🏛️ e-Saddık</h1>
+
+<p>Yönetim Alanı</p>
+
+</div>
+
+
+
+<div class="container">
+
+
+<div class="card">
+
+
+<h2>Bildirim Gönder</h2>
+
+
+<input id="name"
+placeholder="İsim">
+
+
+<input id="surname"
+placeholder="Soy İsim">
+
+
+<input id="tag"
+placeholder="Arama Etiketi">
+
+
+<textarea id="message"
+placeholder="Açıklama / Bildirim"></textarea>
+
+<input id="date"
+type="date">
+
+
+<button onclick="send()">
+
+Gönder
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<script type="module">
+
+
+import {initializeApp}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+import {
+
+getDatabase,
+ref,
+get,
+push,
+set,
+child
+
+}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyC9-0gIJWNdp0WcsTbHcEhOku6NG2oFd2I",
+
+authDomain:"esad-87546.firebaseapp.com",
+
+databaseURL:"https://esad-87546-default-rtdb.europe-west1.firebasedatabase.app",
+
+projectId:"esad-87546",
+
+storageBucket:"esad-87546.firebasestorage.app",
+
+messagingSenderId:"7636719676",
+
+appId:"1:7636719676:web:699f17f22759af64fa0b39"
+
+};
+
+
+
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
+
+
+
+
+
+window.send=async function(){
+
+
+
+let name=
+document.getElementById("name").value.trim();
+
+
+let surname=
+document.getElementById("surname").value.trim();
+
+
+let tag=
+document.getElementById("tag").value.trim();
+
+
+let message=
+document.getElementById("message").value.trim();
+
+
+
+if(!name || !surname || !tag || !message){
+
+alert("Eksik bilgi var");
+return;
+
+}
+
+
+
+
+// Kullanıcıyı bul
+
+const usersSnap=
+await get(ref(db,"users"));
+
+
+
+let targetUID=null;
+
+
+
+if(usersSnap.exists()){
+
+
+let users=usersSnap.val();
+
+
+Object.keys(users).forEach(uid=>{
+
+
+let user=users[uid];
+
+
+if(
+user.name.toLowerCase()===name.toLowerCase()
+&&
+user.surname.toLowerCase()===surname.toLowerCase()
+
+){
+
+targetUID=uid;
+
+}
+
+
+});
+
+
+}
+
+
+
+
+if(!targetUID){
+
+alert("Bu kullanıcı bulunamadı");
+
+return;
+
+}
+
+
+
+
+
+// Bildirim gönder
+
+
+let newDoc=
+push(
+ref(db,"documents/"+targetUID)
+);
+
+
+
+await set(newDoc,{
+
+tag:tag,
+
+message:message,
+
+date:new Date()
+.toLocaleDateString("tr-TR"),
+
+time:new Date()
+.toLocaleTimeString("tr-TR")
+
+});
+
+
+
+alert("Bildirim gönderildi ✅");
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
