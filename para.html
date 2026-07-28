@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>e-Saddık Ekonomi Merkezi</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+font-family:"Segoe UI",Arial;
+}
+
+body{
+margin:0;
+background:#eef2f7;
+}
+
+
+.header{
+
+background:linear-gradient(135deg,#002b55,#0070c9);
+color:white;
+padding:30px;
+text-align:center;
+
+}
+
+
+.container{
+
+width:95%;
+max-width:900px;
+margin:30px auto;
+
+}
+
+
+.balance{
+
+background:white;
+border-radius:20px;
+padding:40px;
+text-align:center;
+box-shadow:0 8px 25px #0003;
+margin-bottom:25px;
+
+}
+
+
+.balance h1{
+
+font-size:45px;
+color:#0070c9;
+
+}
+
+
+
+.card{
+
+background:white;
+padding:20px;
+border-radius:15px;
+margin-top:15px;
+box-shadow:0 5px 15px #0002;
+
+}
+
+
+input,button{
+
+width:100%;
+padding:14px;
+margin-top:10px;
+border-radius:10px;
+
+}
+
+
+input{
+
+border:1px solid #ccc;
+
+}
+
+
+button{
+
+background:#0070c9;
+color:white;
+border:0;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+<h1>🏦 e-Saddık</h1>
+
+<p>Dijital Ekonomi Merkezi</p>
+
+</div>
+
+
+<div class="container">
+
+
+<div class="balance">
+
+<h2>Sistem Bakiyesi</h2>
+
+<h1 id="systemBalance">
+
+₺0
+
+</h1>
+
+</div>
+
+
+
+<h2>👥 Kullanıcı Hesapları</h2>
+
+
+<div id="users">
+
+
+Yükleniyor...
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<script type="module">
+
+
+import {initializeApp}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+import {
+
+getDatabase,
+ref,
+onValue,
+update,
+get
+
+}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyC9-0gIJWNdp0WcsTbHcEhOku6NG2oFd2I",
+
+authDomain:"esad-87546.firebaseapp.com",
+
+databaseURL:"https://esad-87546-default-rtdb.europe-west1.firebasedatabase.app",
+
+projectId:"esad-87546",
+
+storageBucket:"esad-87546.firebasestorage.app",
+
+messagingSenderId:"7636719676",
+
+appId:"1:7636719676:web:699f17f22759af64fa0b39"
+
+};
+
+
+
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
+
+
+
+
+// Sistem parası
+
+onValue(
+ref(db,"systemWallet"),
+(data)=>{
+
+
+let value=data.val()?.balance || 0;
+
+
+document.getElementById("systemBalance")
+.innerHTML="₺"+value;
+
+
+});
+
+
+
+
+
+// Kullanıcıları göster
+
+onValue(
+
+ref(db,"wallets"),
+
+(snapshot)=>{
+
+
+let box=document.getElementById("users");
+
+
+box.innerHTML="";
+
+
+if(!snapshot.exists()){
+
+box.innerHTML="Kullanıcı bulunamadı";
+
+return;
+
+}
+
+
+
+Object.entries(snapshot.val())
+.forEach(([uid,user])=>{
+
+
+box.innerHTML+=`
+
+<div class="card">
+
+<h3>
+🧑 ${user.name} ${user.surname}
+</h3>
+
+
+<p>
+ID:
+${user.accountId}
+</p>
+
+
+<p>
+Bakiye:
+₺${user.balance || 0}
+</p>
+
+
+<input 
+placeholder="Gönderilecek miktar"
+id="money-${uid}"
+>
+
+
+<button onclick="sendMoney('${uid}')">
+
+Para Gönder
+
+</button>
+
+
+</div>
+
+`;
+
+});
+
+
+});
+
+
+window.sendMoney=async function(uid){
+
+
+let amount=
+
+Number(
+document.getElementById("money-"+uid).value
+);
+
+
+if(!amount){
+
+alert("Miktar gir");
+
+return;
+
+}
+
+
+
+const userSnap=
+
+await get(
+ref(db,"wallets/"+uid)
+);
+
+
+let user=userSnap.val();
+
+
+let newBalance=
+
+(user.balance || 0)+amount;
+
+
+
+await update(
+
+ref(db,"wallets/"+uid),
+
+{
+
+balance:newBalance
+
+}
+
+);
+
+
+
+alert("Para gönderildi ✅");
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
